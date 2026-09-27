@@ -1,0 +1,122 @@
+# Targets exercise the three credential paths and both work group modes.
+default:
+  target: dev
+  outputs:
+    dev:                      # default credential chain (AWS_PROFILE / env)
+      type: athena
+      region_name: "{{ env_var('AWS_REGION') }}"
+      s3_staging_dir: "{{ env_var('LAB_S3_ROOT') }}/athena-results/"
+      database: awsdatacatalog
+      schema: "{{ env_var('LAB_SCHEMA') }}"
+      work_group: "{{ env_var('LAB_WORK_GROUP') }}"
+      spark_work_group: "{{ env_var('LAB_WORK_GROUP_SPARK') }}"
+      s3_data_naming: table_unique
+      threads: 4
+    dev_profile:              # named profile
+      type: athena
+      region_name: "{{ env_var('AWS_REGION') }}"
+      s3_staging_dir: "{{ env_var('LAB_S3_ROOT') }}/athena-results/"
+      schema: "{{ env_var('LAB_SCHEMA') }}"
+      work_group: "{{ env_var('LAB_WORK_GROUP') }}"
+      aws_profile_name: "{{ env_var('AWS_PROFILE', '') }}"
+      threads: 4
+    dev_keys:                 # static keys with session token
+      type: athena
+      region_name: "{{ env_var('AWS_REGION') }}"
+      s3_staging_dir: "{{ env_var('LAB_S3_ROOT') }}/athena-results/"
+      schema: "{{ env_var('LAB_SCHEMA') }}"
+      work_group: "{{ env_var('LAB_WORK_GROUP') }}"
+      aws_access_key_id: "{{ env_var('LAB_AWS_ACCESS_KEY_ID') }}"
+      aws_secret_access_key: "{{ env_var('LAB_AWS_SECRET_ACCESS_KEY') }}"
+      aws_session_token: "{{ env_var('LAB_AWS_SESSION_TOKEN') }}"
+      threads: 4
+    open:                     # work group without enforced output location
+      type: athena
+      region_name: "{{ env_var('AWS_REGION') }}"
+      s3_staging_dir: "{{ env_var('LAB_S3_ROOT') }}/athena-results-open/"
+      s3_data_dir: "{{ env_var('LAB_S3_ROOT') }}/lab-open-data/"
+      schema: "{{ env_var('LAB_SCHEMA_OPEN') }}"
+      work_group: "{{ env_var('LAB_WORK_GROUP_OPEN') }}"
+      s3_data_naming: schema_table_unique
+      threads: 4
+    assume_role:              # a role that does not exist: STS AssumeRole must be called and refuse
+      type: athena
+      region_name: "{{ env_var('AWS_REGION') }}"
+      s3_staging_dir: "{{ env_var('LAB_S3_ROOT') }}/athena-results/"
+      schema: "{{ env_var('LAB_SCHEMA') }}"
+      work_group: "{{ env_var('LAB_WORK_GROUP') }}"
+      assume_role_arn: arn:aws:iam::000000000000:role/does-not-exist
+      assume_role_external_id: "{{ env_var('LAB_EXTERNAL_ID') }}"
+    assume_role_ok:           # the role setup.sh creates: trust bound to the caller and the external ID
+      type: athena
+      region_name: "{{ env_var('AWS_REGION') }}"
+      s3_staging_dir: "{{ env_var('LAB_S3_ROOT') }}/athena-results/"
+      schema: "{{ env_var('LAB_SCHEMA') }}"
+      work_group: "{{ env_var('LAB_WORK_GROUP') }}"
+      assume_role_arn: "{{ env_var('LAB_ASSUME_ROLE_ARN') }}"
+      assume_role_external_id: "{{ env_var('LAB_EXTERNAL_ID') }}"
+      assume_role_duration_seconds: 900
+      threads: 4
+    assume_role_bad_ext:      # same role, wrong external ID: the trust policy must refuse it
+      type: athena
+      region_name: "{{ env_var('AWS_REGION') }}"
+      s3_staging_dir: "{{ env_var('LAB_S3_ROOT') }}/athena-results/"
+      schema: "{{ env_var('LAB_SCHEMA') }}"
+      work_group: "{{ env_var('LAB_WORK_GROUP') }}"
+      assume_role_arn: "{{ env_var('LAB_ASSUME_ROLE_ARN') }}"
+      assume_role_external_id: wrong
+    dev_lf_db:                # schema LF-Tags from the profile, applied when dbt creates the schema
+      type: athena
+      region_name: "{{ env_var('AWS_REGION') }}"
+      s3_staging_dir: "{{ env_var('LAB_S3_ROOT') }}/athena-results/"
+      schema: "{{ env_var('LAB_SCHEMA_LF') }}"
+      work_group: "{{ env_var('LAB_WORK_GROUP') }}"
+      lf_tags_database:
+        LAB_LF_TAG_DOMAIN: lab   # dbt renders values, not keys: run-matrix.sh writes the tag name here
+    no_iceberg_retries:       # the control case of the Iceberg commit conflict test
+      type: athena
+      region_name: "{{ env_var('AWS_REGION') }}"
+      s3_staging_dir: "{{ env_var('LAB_S3_ROOT') }}/athena-results/"
+      schema: "{{ env_var('LAB_SCHEMA') }}"
+      work_group: "{{ env_var('LAB_WORK_GROUP') }}"
+      num_iceberg_retries: 0
+    endpoint:                 # explicit regional endpoint, fast polling
+      type: athena
+      region_name: "{{ env_var('AWS_REGION') }}"
+      s3_staging_dir: "{{ env_var('LAB_S3_ROOT') }}/athena-results/"
+      schema: "{{ env_var('LAB_SCHEMA') }}"
+      work_group: "{{ env_var('LAB_WORK_GROUP') }}"
+      endpoint_url: https://athena.{{ env_var('AWS_REGION') }}.amazonaws.com
+      poll_interval: 0.2
+      num_retries: 2
+      num_iceberg_retries: 1
+      threads: 4
+    endpoint_bogus:           # nothing listens there: the Athena calls must go to it
+      type: athena
+      region_name: "{{ env_var('AWS_REGION') }}"
+      s3_staging_dir: "{{ env_var('LAB_S3_ROOT') }}/athena-results/"
+      schema: "{{ env_var('LAB_SCHEMA') }}"
+      work_group: "{{ env_var('LAB_WORK_GROUP') }}"
+      endpoint_url: https://127.0.0.1:9
+      num_retries: 0
+    bad_poll_interval:
+      type: athena
+      region_name: "{{ env_var('AWS_REGION') }}"
+      s3_staging_dir: "{{ env_var('LAB_S3_ROOT') }}/athena-results/"
+      schema: "{{ env_var('LAB_SCHEMA') }}"
+      work_group: "{{ env_var('LAB_WORK_GROUP') }}"
+      poll_interval: soon
+    skip_wg_check:            # enforced work group, check skipped: CTAS gets an external_location Athena refuses
+      type: athena
+      region_name: "{{ env_var('AWS_REGION') }}"
+      s3_staging_dir: "{{ env_var('LAB_S3_ROOT') }}/athena-results/"
+      schema: "{{ env_var('LAB_SCHEMA') }}"
+      work_group: "{{ env_var('LAB_WORK_GROUP') }}"
+      skip_workgroup_check: true
+    open_default_naming:      # open work group, no s3_data_naming: dbt-athena's default schema_table_unique
+      type: athena
+      region_name: "{{ env_var('AWS_REGION') }}"
+      s3_staging_dir: "{{ env_var('LAB_S3_ROOT') }}/athena-results-open/"
+      s3_data_dir: "{{ env_var('LAB_S3_ROOT') }}/lab-open-data/"
+      schema: "{{ env_var('LAB_SCHEMA_OPEN') }}"
+      work_group: "{{ env_var('LAB_WORK_GROUP_OPEN') }}"

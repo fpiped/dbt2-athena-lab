@@ -1,0 +1,12 @@
+# dbt-core 1.11 + dbt-athena 1.11: the reference behaviour, on the tables the main project builds.
+dbt1:
+  target: dev
+  outputs:
+    dev:
+      type: athena
+      region_name: "{{ env_var('AWS_REGION') }}"
+      s3_staging_dir: "{{ env_var('LAB_S3_ROOT') }}/athena-results/"
+      database: awsdatacatalog
+      schema: "{{ env_var('LAB_SCHEMA') }}"
+      work_group: "{{ env_var('LAB_WORK_GROUP') }}"
+      threads: 1

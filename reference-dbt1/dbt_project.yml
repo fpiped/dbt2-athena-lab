@@ -1,0 +1,5 @@
+name: 'lab_reference_dbt1'
+config-version: 2
+version: '0.1'
+profile: 'dbt1'
+macro-paths: ["macros"]

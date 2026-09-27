@@ -1,0 +1,7 @@
+# Build environment of dbt's release-v2 workflow for aarch64-unknown-linux-gnu.
+FROM quay.io/pypa/manylinux_2_28_aarch64
+RUN dnf install -y unzip && dnf clean all
+RUN curl -LsSf https://github.com/protocolbuffers/protobuf/releases/download/v29.4/protoc-29.4-linux-aarch_64.zip -o /tmp/protoc.zip \
+ && unzip -q /tmp/protoc.zip -d /opt/protoc && rm /tmp/protoc.zip
+ENV PATH=/opt/protoc/bin:/root/.cargo/bin:$PATH
+RUN curl -LsSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain none

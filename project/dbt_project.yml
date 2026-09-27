@@ -1,0 +1,53 @@
+name: 'jaffle_shop'
+
+config-version: 2
+version: '0.1'
+
+profile: 'default'
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+analysis-paths: ["analysis"]
+macro-paths: ["macros"]
+
+target-path: "target"
+clean-targets:
+    - "target"
+    - "dbt_modules"
+    - "logs"
+
+require-dbt-version: [">=1.0.0", "<3.0.0"]
+
+models:
+  jaffle_shop:
+      +materialized: table
+      staging:
+        +materialized: view
+      lab_python:             # Python models on the Spark work group; built only by their step
+        +enabled: "{{ var('lab_python', false) }}"
+
+seeds:
+  jaffle_shop:
+    lab_seed_insert:
+      +seed_by_insert: true
+    lab_seed_sse:
+      +seed_s3_upload_args:
+        ServerSideEncryption: AES256
+    lab_seed_sse_bad:         # a KMS key that does not exist: the upload must fail on it
+      +enabled: "{{ var('lab_negative', false) }}"
+      +seed_s3_upload_args:
+        ServerSideEncryption: aws:kms
+        SSEKMSKeyId: arn:aws:kms:{{ env_var('AWS_REGION') }}:{{ env_var('LAB_ACCOUNT_ID') }}:key/00000000-0000-0000-0000-000000000000
+    lab_seed_types:
+      +column_types:
+        amount: decimal(10,2)
+        ordered_at: timestamp
+      +quote_columns: false
+
+vars:
+  lab_extra_col: false      # flip to true for the on_schema_change run
+  lab_struct_col: false     # flip to true to add a struct column with append_new_columns
+  lab_negative: false       # enable the models that must fail with a clear message
+  lab_python: false         # enable the Python models
+  lab_lf: false             # enable the Lake Formation model

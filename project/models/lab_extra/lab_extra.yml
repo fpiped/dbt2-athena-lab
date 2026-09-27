@@ -1,0 +1,14 @@
+version: 2
+models:
+  - name: lab_unique_tmp
+    columns:
+      - name: id
+        data_tests:
+          # warn-level failure: rows > 1 fail, and are stored in the audit schema
+          - accepted_values:
+              arguments:
+                values: [1]
+                quote: false
+              config:
+                severity: warn
+                store_failures: true

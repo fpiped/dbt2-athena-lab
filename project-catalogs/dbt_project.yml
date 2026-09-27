@@ -1,0 +1,8 @@
+# catalogs.yml v2 on Athena: a Glue Iceberg catalog and an S3 Tables catalog.
+# Kept apart from project/ because use_catalogs_v2 changes relation building project-wide.
+name: 'lab_catalogs'
+config-version: 2
+version: '0.1'
+profile: 'default'
+flags:
+  use_catalogs_v2: true

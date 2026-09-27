@@ -1,0 +1,38 @@
+version: 2
+models:
+  - name: lab_docs
+    description: "Customers, persisted to Glue. Second line of the description."
+    columns:
+      - name: customer_id
+        description: "Primary key."
+        config:
+          meta: {pii: false}
+      - name: first_name
+        description: "First name."
+  - name: lab_contract
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: customer_id
+        data_type: integer
+      - name: first_name
+        data_type: varchar
+sources:
+  - name: raw
+    schema: "{{ target.schema }}"
+    config:
+      freshness:
+        warn_after: {count: 100000, period: day}
+      loaded_at_field: "cast(order_date as timestamp)"
+    tables:
+      - name: raw_orders
+unit_tests:
+  - name: stg_customers_renames_id
+    model: stg_customers
+    given:
+      - input: ref('raw_customers')
+        rows:
+          - {id: 1, first_name: Ann, last_name: Lee}
+    expect:
+      rows:
+        - {customer_id: 1, first_name: Ann, last_name: Lee}

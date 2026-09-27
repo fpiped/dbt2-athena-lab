@@ -1,0 +1,11 @@
+{"Version": "2012-10-17", "Statement": [
+  {"Effect": "Allow", "Action": "athena:*", "Resource": [
+    "arn:aws:athena:@REGION@:@ACCOUNT@:workgroup/@WORK_GROUP@",
+    "arn:aws:athena:@REGION@:@ACCOUNT@:workgroup/@WORK_GROUP_OPEN@",
+    "arn:aws:athena:@REGION@:@ACCOUNT@:datacatalog/AwsDataCatalog"]},
+  {"Effect": "Allow", "Action": ["glue:Get*", "glue:BatchGet*", "glue:Search*"], "Resource": "*"},
+  {"Effect": "Allow", "Action": "glue:*", "Resource": [
+    "arn:aws:glue:@REGION@:@ACCOUNT@:catalog",
+    "arn:aws:glue:@REGION@:@ACCOUNT@:database/@SCHEMA@*",
+    "arn:aws:glue:@REGION@:@ACCOUNT@:table/@SCHEMA@*/*"]},
+  {"Effect": "Allow", "Action": "s3:*", "Resource": ["arn:aws:s3:::@BUCKET@", "arn:aws:s3:::@BUCKET@@S3_PATH@/*"]}]}

@@ -1,0 +1,13 @@
+catalogs:
+  - name: lake
+    type: glue
+    table_format: iceberg
+    config:
+      athena:
+        external_volume: "{{ env_var('LAB_S3_ROOT') }}/lab-catalog-lake"
+  - name: tables
+    type: s3_tables
+    table_format: iceberg
+    config:
+      athena:
+        catalog_database: s3tablescatalog/{{ env_var('LAB_TABLE_BUCKET') }}

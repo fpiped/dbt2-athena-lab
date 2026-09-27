@@ -1,0 +1,3 @@
+{"Version": "2012-10-17", "Statement": [{"Effect": "Allow", "Principal": {"Service": "athena.amazonaws.com"}, "Action": "sts:AssumeRole",
+  "Condition": {"StringEquals": {"aws:SourceAccount": "@ACCOUNT@"},
+                "ArnLike": {"aws:SourceArn": "arn:aws:athena:@REGION@:@ACCOUNT@:workgroup/@WORK_GROUP_SPARK@"}}}]}

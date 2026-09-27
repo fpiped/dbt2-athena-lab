@@ -1,0 +1,27 @@
+COL lab_types s dtype=string data_type=varchar is_string=true
+COL lab_types s10 dtype=varchar(10) data_type=varchar(10) is_string=false
+COL lab_types a dtype=array<varchar(1)> data_type=array(varchar(1)) is_string=false
+COL lab_types m dtype=map<varchar(1),int> data_type=map<varchar(1),int> is_string=false
+COL lab_types st dtype=struct<f:string,g:int> data_type=struct<f:string,g:int> is_string=false
+COL lab_types d dtype=decimal(10,2) data_type=decimal(10,2) is_string=false
+COL lab_types ts dtype=timestamp data_type=timestamp is_string=false
+COL lab_types b dtype=binary data_type=varbinary is_string=false
+COL lab_types i dtype=int data_type=int is_string=false
+COL lab_types bi dtype=bigint data_type=bigint is_string=false
+COL lab_types db dtype=double data_type=double is_string=false
+COL lab_types bo dtype=boolean data_type=boolean is_string=false
+COL lab_types dt dtype=date data_type=date is_string=false
+CAST-OK lab_types
+COL lab_types_ice s dtype=string data_type=varchar is_string=true
+COL lab_types_ice a dtype=array<string> data_type=array(varchar) is_string=false
+COL lab_types_ice m dtype=map<string,int> data_type=map<string,int> is_string=false
+COL lab_types_ice st dtype=struct<f:string,g:int> data_type=struct<f:string,g:int> is_string=false
+COL lab_types_ice d dtype=decimal(10,2) data_type=decimal(10,2) is_string=false
+COL lab_types_ice ts dtype=timestamp data_type=timestamp(6) is_string=false
+COL lab_types_ice b dtype=binary data_type=varbinary is_string=false
+COL lab_types_ice i dtype=int data_type=int is_string=false
+COL lab_types_ice bi dtype=bigint data_type=bigint is_string=false
+COL lab_types_ice db dtype=double data_type=double is_string=false
+COL lab_types_ice bo dtype=boolean data_type=boolean is_string=false
+COL lab_types_ice dt dtype=date data_type=date is_string=false
+CAST-OK lab_types_ice

@@ -1,0 +1,16 @@
+{"Version": "2012-10-17", "Statement": [
+  {"Effect": "Allow", "Action": "s3:*", "Resource": ["arn:aws:s3:::@BUCKET@", "arn:aws:s3:::@BUCKET@@S3_PATH@/*"]},
+  {"Effect": "Allow", "Action": ["glue:Get*", "glue:BatchGet*", "glue:Search*"], "Resource": "*"},
+  {"Effect": "Allow", "Action": "glue:*", "Resource": [
+    "arn:aws:glue:@REGION@:@ACCOUNT@:catalog",
+    "arn:aws:glue:@REGION@:@ACCOUNT@:database/@SCHEMA@*",
+    "arn:aws:glue:@REGION@:@ACCOUNT@:table/@SCHEMA@*/*"]},
+  {"Effect": "Allow", "Action": ["athena:GetWorkGroup", "athena:GetSession", "athena:GetSessionStatus", "athena:TerminateSession",
+    "athena:ListSessions", "athena:StartCalculationExecution", "athena:GetCalculationExecution", "athena:GetCalculationExecutionCode",
+    "athena:GetCalculationExecutionStatus", "athena:StopCalculationExecution", "athena:ListCalculationExecutions", "athena:ListExecutors"],
+   "Resource": "arn:aws:athena:@REGION@:@ACCOUNT@:workgroup/@WORK_GROUP_SPARK@"},
+  {"Effect": "Allow", "Action": ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:DescribeLogStreams", "logs:PutLogEvents"],
+   "Resource": "arn:aws:logs:@REGION@:@ACCOUNT@:log-group:/aws-athena:*"},
+  {"Effect": "Allow", "Action": "logs:DescribeLogGroups", "Resource": "*"},
+  {"Effect": "Allow", "Action": "cloudwatch:PutMetricData", "Resource": "*",
+   "Condition": {"StringEquals": {"cloudwatch:namespace": "AmazonAthenaForApacheSpark"}}}]}

@@ -1,0 +1,5 @@
+name: 'lab_scale'
+config-version: 2
+version: '0.1'
+profile: 'scale'
+model-paths: ["models"]

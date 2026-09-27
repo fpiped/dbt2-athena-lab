@@ -1,0 +1,11 @@
+default:
+  target: dev
+  outputs:
+    dev:
+      type: athena
+      region_name: "{{ env_var('AWS_REGION') }}"
+      s3_staging_dir: "{{ env_var('LAB_S3_ROOT') }}/athena-results/"
+      database: awsdatacatalog
+      schema: "{{ env_var('LAB_SCHEMA') }}"   # also the namespace of the S3 Tables table bucket
+      work_group: "{{ env_var('LAB_WORK_GROUP') }}"
+      threads: 4

@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Release build of the stack (dbt) and the driver for linux/arm64 (e.g. Fargate ARM64) into linux/out/:
+# dbt in the manylinux_2_28 image dbt's release-v2 workflow uses, the driver shim with CGO in golang:1.26.
+set -euo pipefail
+source "$(cd "$(dirname "$0")/.." && pwd)/lib.sh"
+OUT="$LAB/linux/out"; mkdir -p "$OUT/lib"
+# Build from a snapshot of the stack commit (plus the Cargo.lock the Mac builds resolved), so that
+# rebuild-stack.sh can reset stack/ while this runs.
+SRC="$LAB/linux/src"; rm -rf "$SRC"; mkdir -p "$SRC"
+git -C "$LAB/stack" archive HEAD | tar -x -C "$SRC"
+cp "$LAB/stack/Cargo.lock" "$SRC/"
+git -C "$LAB/stack" rev-parse HEAD > "$OUT/STACK_COMMIT"
+docker build -q -t $LAB_PREFIX-dbt-build -f "$LAB/linux/Dockerfile.build" "$LAB/linux" >/dev/null
+docker run --rm -v "$LAB/driver:/driver" -v "$OUT/lib:/out" -v $LAB_PREFIX-go:/go/pkg/mod -w /driver/go/pkg golang:1.26-bookworm \
+  bash -c 'rm -f libadbc_driver_athena.so && make >/dev/null && cp libadbc_driver_athena.so /out/'
+# target dir and cargo registry live in docker volumes, not on the Mac disk
+docker run --rm -v "$SRC:/src" -v "$OUT:/out" -v $LAB_PREFIX-dbt-target:/target -v $LAB_PREFIX-cargo:/root/.cargo/registry \
+  -e CARGO_TARGET_DIR=/target -e CARGO_INCREMENTAL=0 -w /src \
+  -e CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16 $LAB_PREFIX-dbt-build \
+  bash -c 'cargo build --release --bin dbt -j 3 && cp /target/release/dbt /out/dbt'
+# (-j 3 and 16 codegen units: 8 jobs with the profile's codegen-units=1 ran out of 12 GB of Docker memory)
+file "$OUT/dbt" "$OUT/lib/libadbc_driver_athena.so"
+# The ECS image: the release binary, the driver and the image project (ecs-e2e/ runs it).
+cp "$OUT/dbt" "$OUT/lib/libadbc_driver_athena.so" "$LAB/linux/image/"
+docker build -q --platform linux/arm64 -t "$LAB_PREFIX-dbt:$(cut -c1-9 "$OUT/STACK_COMMIT")" \
+  --build-arg AWS_REGION --build-arg LAB_S3_ROOT --build-arg LAB_SCHEMA --build-arg LAB_WORK_GROUP "$LAB/linux/image"
+rm -f "$LAB/linux/image/dbt" "$LAB/linux/image/libadbc_driver_athena.so"

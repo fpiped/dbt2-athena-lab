@@ -1,0 +1,10 @@
+default:
+  target: ecs
+  outputs:
+    ecs:                      # default credential chain: the ECS task role
+      type: athena
+      region_name: "{{ env_var('AWS_REGION') }}"
+      s3_staging_dir: "{{ env_var('LAB_S3_ROOT') }}/athena-results/"
+      schema: "{{ env_var('LAB_SCHEMA') }}_ecs"
+      work_group: "{{ env_var('LAB_WORK_GROUP') }}"
+      threads: 4
