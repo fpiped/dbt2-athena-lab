@@ -9,19 +9,15 @@ source "$(cd "$(dirname "$0")" && pwd)/lib.sh"
 BASE=${BASE:-origin/main}   # a pinned main commit keeps a comparison against an earlier run fair
 
 DBT=https://github.com/dbt-labs/dbt.git
-ALDO=https://github.com/aoelvp94/dbt.git
 DRIVER=https://github.com/dbt-labs/athena.git
-# In merge order: <number> <repository>. The aoelvp94/dbt PRs are fixes to the parts' branches.
+# In merge order: <number> <repository>.
 PARTS=(
   "16274 $DBT"   # Part 1: profile schema
   "16365 $DBT"   # Part 0: ADBC driver wiring
   "16367 $DBT"   # Part 2: adapter core wiring
   "16368 $DBT"   # Part 3: model config keys
-  "3 $ALDO"      #   fix: Athena seed configs in dbt_project.yml
   "16369 $DBT"   # Part 4: dbt-athena macro package
-  "1 $ALDO"      #   fix: S3 Tables macros, Lake Formation on create_schema, catalog information_schema
   "16374 $DBT"   # Part 5: metadata adapter
-  "2 $ALDO"      #   fix: list_relations in the relation's catalog
   "16370 $DBT"   # Part 8: unit tests
   "16375 $DBT"   # Part 9: init wizard
   "16376 $DBT"   # Part 6: AthenaAdapter methods through the driver
@@ -65,8 +61,6 @@ for f in files:
                 names |= {n.strip() for n in side.replace("\n", " ").split(",") if n.strip()}
             return "    " + ", ".join(sorted(names, key=str.lower)) + ",\n"
         s = re.sub(r"<<<<<<< [^\n]*\n(.*?)=======\n(.*?)>>>>>>> [^\n]*\n", union, s, flags=re.S)
-    elif part == "16368" and f.endswith("project/configs/common.rs"):
-        s = re.sub(keep_theirs, r"\1", s, flags=re.S)   # Part 3's comment; the attribute comes from the bench patch
     elif part == "16374":
         s = re.sub(keep_theirs, r"\1", s, flags=re.S)   # Part 5's metadata adapter over Part 2's stubs
     elif part == "16375":
@@ -94,10 +88,6 @@ done
 sed -i.bak 's/adapter.list_relations(&query_ctx, conn, db_schema, token_clone.clone())/adapter.list_relations(None, \&query_ctx, conn, db_schema, token_clone.clone())/' \
   "$LAB/stack/crates/dbt-adapter/src/metadata/athena/mod.rs" && rm -f "$LAB/stack/crates/dbt-adapter/src/metadata/athena/mod.rs.bak"
 git -C "$LAB/stack" -c commit.gpgsign=false commit -q -am "bench patch: 16374 list_relations takes state" || true
-# 16368 (Part 3): main requires #[warehouse(...)] on every WarehouseSpecificNodeConfig field (c5e0429a8, the
-# per-resource-type applicability table); the bench accepts the Athena keys on every node type.
-python3 "$LAB/patches/warehouse_all_nodes.py" "$LAB/stack/crates/dbt-schemas/src/schemas/project/configs/common.rs"
-git -C "$LAB/stack" -c commit.gpgsign=false commit -q -am "bench patch: 16368 warehouse applicability on the Athena keys" || true
 if grep -rn --include='*.rs' 'todo!("Athena")' "$LAB/stack/crates" >/dev/null; then echo "todo!(Athena) left"; exit 1; fi
 if grep -rln '^<<<<<<< ' "$LAB/stack/crates" >/dev/null; then echo "conflict markers left"; exit 1; fi
 
