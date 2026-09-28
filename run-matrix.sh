@@ -278,7 +278,7 @@ check glue_alias_catalog "columns through a Glue catalog registered in Athena" "
 step non_glue_catalog "fail:LambdaFunction" -- run-operation lab_columns_in --args "{database: $LAB_CATALOG_NON_GLUE, name: anything}"
 
 # --- metadata reads: relations, columns and schemas come from Glue; information_schema is read only
-#     by the docs catalog query (athena__get_catalog_relations)
+#     by the catalog query of `compile --write-catalog` (athena__get_catalog_relations)
 check metadata_from_glue "information_schema queries since the start: tables columns schemata (catalog apart)" "$(CENSUS_SKIP_CATALOG=$LAB_CATALOG_NON_GLUE python3 "$LAB/census.py" "$WG" "$MATRIX_START" | cut -d' ' -f1-3)" "0 0 0"
 
 echo; echo "PASS $(grep -c '^PASS' "$RES")  FAIL $(grep -c '^FAIL' "$RES")"

@@ -1,7 +1,7 @@
 """Metadata queries a run sent to Athena: information_schema reads by kind, since a start time.
 
 Usage: census.py WORK_GROUP SINCE_EPOCH_SECONDS [UNTIL_EPOCH_SECONDS]  ->  "<tables> <columns> <schemata> <catalog>"
-`catalog` is the docs/`--write-catalog` query (athena__get_catalog_relations), counted apart from
+`catalog` is the `compile --write-catalog` query (athena__get_catalog_relations), counted apart from
 the per-relation reads. Queries on the catalog CENSUS_SKIP_CATALOG names (outside Glue, so on the
 SQL path by design) are left out. Stops paging once it reaches queries older than SINCE.
 """

@@ -48,7 +48,7 @@ the parts before pushing it, point that part at it: `LAB_REF_16376=my-branch ./r
 - **Metadata**: relations, columns and schemas read from Glue as dbt-athena reads them; column types
   compared line by line with dbt-core 1.11 + dbt-athena 1.11 (`project/expected/`); dropped Iceberg
   columns; mixed-case names; `dbt_utils.union_relations`; a Glue catalog registered in Athena and a
-  catalog outside Glue; no `information_schema` query outside the docs catalog.
+  catalog outside Glue; no `information_schema` query outside the catalog query of `compile --write-catalog`.
 - **Runtime**: the adapter response in `run_results.json`, Iceberg commit conflicts rerun, Ctrl-C
   stopping the running query, `dbt retry`, tests, source freshness, docs.
 - **Optional sections** (`env.sh`): Python models on an Athena Spark work group (including timeout and
